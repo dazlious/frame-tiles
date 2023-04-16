@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+  <title>Foobar</title>
+  <style type="text/css">
+    :root {
+      --scale: 1.0;
+    }
+
+    html, body {
+      padding: 0;
+      margin: 0;
+      background: #333;
+    }
+
+    .input {
+      min-width: 160px;
+      flex: 1 1 0;
+      margin-bottom: 16px;
+    }
+
+
+    input {
+      text-align: right;
+    }
+
+    label {
+      white-space: nowrap;
+    }
+
+    .wrapper {
+      display: grid;
+      width: 100vw;
+      height: 100vh;
+      gap: 0;
+      grid-template-columns: 1fr;
+      grid-template-rows: 164px auto 64px;
+    }
+
+    .wrapper-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+    }
+
+    .content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .canvas {
+      width: calc(var(--canvas-w) + var(--pp-size) + var(--frame-size));
+      height: calc(var(--canvas-h) + var(--pp-size) + var(--frame-size));
+      transform: scale(var(--scale));
+    }
+
+    .grid {
+      margin: auto;
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      width: var(--canvas-w);
+      height: var(--canvas-h);
+      display: grid;
+      grid-template-columns: repeat(var(--columns), 1fr);
+      grid-template-rows: repeat(var(--rows), 1fr);
+      column-gap: var(--gap-x);
+      row-gap: var(--gap-y);
+      background: #fff;
+    }
+
+    .passepartout {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: calc(var(--canvas-w) + var(--pp-size));
+      height: calc(var(--canvas-h) + var(--pp-size));
+      z-index: 2;
+      background: #fff;
+    }
+
+    .frame {
+      width: calc(var(--canvas-w) + var(--pp-size) + var(--frame-size));
+      height: calc(var(--canvas-h) + var(--pp-size) + var(--frame-size));
+      z-index: 1;
+      background: tan;
+    }
+
+    .passepartout::after {
+      position: absolute;
+      content: '';
+      inset: 0;
+      margin: auto;
+      width: calc(var(--canvas-w) + var(--pp-size) / 10) ;
+      height: calc(var(--canvas-h) + var(--pp-size) / 10) ;
+      border: calc(var(--pp-size) / 10) inset #ededed;
+    }
+
+    p {
+      margin: 0;
+      display: block;
+    }
+
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #cccccc;
+    }
+
+    #header {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      flex: 1 1 auto;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    #footer {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+    <main class="wrapper">
+      <div class="wrapper-container">
+        <header id="header" class="bg-light">
+          <div class="input">
+            <label for="canvas-width" class="form-label">Canvas Width</label>
+            <div class="input-group">
+              <span class="input-group-text">mm</span>
+              <input type="number" class="form-control" id="canvas-width" step="1" min="0" value="500">
+            </div>
+          </div>
+          <div class="input">
+            <label for="canvas-height" class="form-label">Canvas Height</label>
+            <div class="input-group">
+              <span class="input-group-text">mm</span>
+              <input type="number" class="form-control" id="canvas-height" step="1" min="0" value="700">
+            </div>
+          </div>
+          <div class="input">
+            <label for="pp-size" class="form-label">Passepartout Size</label>
+            <div class="input-group">
+              <span class="input-group-text">mm</span>
+              <input type="number" class="form-control" id="pp-size" step="1" min="0" value="100">
+            </div>
+          </div>
+          <div class="input">
+            <label for="frame-size" class="form-label">Frame Size</label>
+            <div class="input-group">
+              <span class="input-group-text">mm</span>
+              <input type="number" class="form-control" id="frame-size" step="1" min="0" value="10">
+            </div>
+          </div>
+          <div class="input">
+            <label for="rows" class="form-label">Rows</label>
+            <div class="input-group">
+              <span class="input-group-text">mm</span>
+              <input type="number" class="form-control" id="rows" step="1" min="0" value="3">
+            </div>
+          </div>
+          <div class="input">
+            <label for="columns" class="form-label">Columns</label>
+            <div class="input-group">
+              <span class="input-group-text">mm</span>
+              <input type="number" class="form-control" id="columns" step="1" min="0" value="4">
+            </div>
+          </div>
+          <div class="input">
+            <label for="gap-x" class="form-label">Gap X</label>
+            <div class="input-group">
+              <span class="input-group-text">mm</span>
+              <input type="number" class="form-control" id="gap-x" step="1" min="0" value="10">
+            </div>
+          </div>
+          <div class="input">
+            <label for="gap-y" class="form-label">Gap Y</label>
+            <div class="input-group">
+              <span class="input-group-text">mm</span>
+              <input type="number" class="form-control" id="gap-y" step="1" min="0" value="10">
+            </div>
+          </div>
+        </header>
+      </div>
+      <div class="wrapper-container">
+        <div id="content" class="content">
+          <div id="canvas" class="canvas">
+            <div id="grid" class="grid"></div>
+            <div class="passepartout"></div>
+            <div class="frame"></div>
+          </div>
+        </div>
+      </div>
+      <div class="wrapper-container">
+      <footer id="footer" class="d-flex flex-column align-items-center justify-content-center bg-light p-2">
+        <p>Cell Size: <span id="cell-size"></span></p>
+        <p>Difference: <span id="diff-size"></span></p>
+      </footer>
+    </div>
+</main>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const grid = document.getElementById('grid');
+    const content = document.getElementById('content');
+    const cellSize = document.getElementById('cell-size');
+    const diffSize = document.getElementById('diff-size');
+    const root = document.documentElement;
+    const CELL_CLASS = 'cell';
+
+    let LAST_SCALE = 1.0;
+
+    let BORDER_PP = 10;
+    let CANVAS_W = 500;
+    let CANVAS_H = 700;
+    let PASS_PARTOUT_SIZE = 100;
+    let FRAME_SIZE = 30;
+    let ELEMENTS_IN_ROW = 3;
+    let ELEMENTS_IN_COLUMN = 4;
+    let GAPX = 10;
+    let GAPY = 10;
+
+    const PADDING = 16;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      generate();
+    });
+
+    document.getElementById('rows').addEventListener("change", (e) => {
+      ELEMENTS_IN_ROW = parseInt(e.target.value);
+      generate();
+    });
+
+    document.getElementById('columns').addEventListener("change", (e) => {
+      ELEMENTS_IN_COLUMN = parseInt(e.target.value);
+      generate();
+    });
+
+    document.getElementById('gap-x').addEventListener("change", (e) => {
+      GAPX = parseInt(e.target.value)
+      generate();
+    });
+
+    document.getElementById('gap-y').addEventListener("change", (e) => {
+      GAPY = parseInt(e.target.value)
+      generate();
+    });
+
+    document.getElementById('frame-size').addEventListener("change", (e) => {
+      FRAME_SIZE = parseInt(e.target.value)
+      generate();
+    });    
+
+    document.getElementById('pp-size').addEventListener("change", (e) => {
+      PASS_PARTOUT_SIZE = parseInt(e.target.value)
+      generate();
+    });
+
+    document.getElementById('canvas-width').addEventListener("change", (e) => {
+      CANVAS_W = parseInt(e.target.value)
+      generate();
+    });
+
+    document.getElementById('canvas-height').addEventListener("change", (e) => {
+      CANVAS_H = parseInt(e.target.value)
+      generate();
+    });
+
+    const resize = (e) => {
+      const { width, height } = content.getBoundingClientRect();
+      const { width: canvasWidth, height: canvasHeight } = canvas.getBoundingClientRect();
+
+      const x = width / ((canvasWidth + PADDING) / LAST_SCALE);
+      const y = height / ((canvasHeight + PADDING) / LAST_SCALE);
+
+      const SCALE = Math.max(Math.min(Math.min(x, y), 1.0), 0.2);
+      LAST_SCALE = SCALE;
+
+      root.style.setProperty('--scale', `${SCALE}`);
+    }
+
+    window.addEventListener('resize', resize, false);
+    window.addEventListener('orientationchange', resize, false);
+
+    const calcCellSize = () => {
+      const [oneCell] = document.querySelectorAll(`.${CELL_CLASS}`);
+      const { width, height } = oneCell.getBoundingClientRect();
+      cellSize.innerText = `${width.toFixed(2)} mm x ${height.toFixed(2)} mm` 
+      diffSize.innerText = `${Math.abs(width - height).toFixed(2)} mm` 
+    }
+
+    const generate = () => {
+      root.style.setProperty('--canvas-w', `${CANVAS_W}px`);
+      root.style.setProperty('--canvas-h', `${CANVAS_H}px`);
+      root.style.setProperty('--pp-size', `${PASS_PARTOUT_SIZE}px`);
+      root.style.setProperty('--frame-size', `${FRAME_SIZE}px`);
+      root.style.setProperty('--columns', ELEMENTS_IN_ROW);
+      root.style.setProperty('--rows', ELEMENTS_IN_COLUMN);
+      root.style.setProperty('--gap-x', `${GAPX}px`);
+      root.style.setProperty('--gap-y', `${GAPY}px`);
+
+      const existingCells = grid.children;
+      const NUM_OF_ELEMS = ELEMENTS_IN_COLUMN * ELEMENTS_IN_ROW;
+
+      if (existingCells !== NUM_OF_ELEMS) {
+        const cells = Array.from(new Array(NUM_OF_ELEMS)).map((_, i) => {
+          const cell = document.createElement('div');
+          cell.classList.add(CELL_CLASS);
+          cell.innerText = i + 1;
+          return cell;
+        });
+        grid.replaceChildren(...cells);  
+      }
+
+      calcCellSize();
+      resize();
+    }
+  </script>
+</body>
+</html>
